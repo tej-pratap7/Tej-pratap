@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking Short Notes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #F5F3EE;
+    --card: #FFFFFF;
+    --ink: #1A1A1A;
+    --ink2: #555;
+    --ink3: #999;
+    --border: #E0DDD7;
+
+    --c1: #FF4D4D; /* CRC - red */
+    --c2: #2563EB; /* Windowing - blue */
+    --c3: #059669; /* DVR - green */
+    --c4: #D97706; /* Classful - amber */
+    --c5: #7C3AED; /* TCP - purple */
+    --c6: #0891B2; /* MD5 - cyan */
+    --c7: #DC2626; /* IPv6 - rose */
+    --c8: #065F46; /* Frame Relay - emerald */
+    --c9: #9333EA; /* FSK/PSK - violet */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--ink);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: .05em; }
+  .topbar-sub { font-size: 11px; color: #aaa; margin-top: 1px; }
+  .topbar-badge {
+    background: #FF4D4D;
+    color: #fff;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 700;
+  }
+
+  /* FILTER TABS */
+  .tabs {
+    padding: 14px 16px 0;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .tab {
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    color: var(--ink2);
+    background: var(--card);
+    transition: all .15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab:hover { border-color: var(--ink); color: var(--ink); }
+  .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* GRID */
+  .grid {
+    max-width: 900px;
+    margin: 16px auto 0;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 12px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+  .card-top {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .card-head {}
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .card-subtitle {
+    font-size: 10.5px;
+    color: var(--ink3);
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .card-body { padding: 12px 16px; }
+
+  /* Analogy box */
+  .analogy {
+    border-radius: 7px;
+    padding: 9px 11px;
+    margin-bottom: 10px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .analogy-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+    font-style: normal;
+  }
+
+  /* Points */
+  .points { list-style: none; }
+  .points li {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink2);
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+  }
+  .points li:last-child { border-bottom: none; }
+  .bullet {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'Space Mono', monospace;
+  }
+  strong { color: var(--ink); font-weight: 600; }
+
+  /* Formula / key */
+  .formula {
+    margin-top: 10px;
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .formula-label {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+    opacity: .7;
+  }
+
+  /* Diff table */
+  .diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+  .diff-table th {
+    padding: 5px 8px;
+    text-align: left;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border);
+  }
+  .diff-table td {
+    padding: 5px 8px;
+    border-bottom: 1px dashed var(--border);
+    color: var(--ink2);
+    vertical-align: top;
+  }
+  .diff-table tr:last-child td { border-bottom: none; }
+
+  /* Memory trick */
+  .trick {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 5px;
+    padding: 5px 9px;
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-top: 9px;
+  }
+
+  /* WIDE card spans 2 */
+  .card.wide { grid-column: span 2; }
+  @media (max-width: 600px) { .card.wide { grid-column: span 1; } }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-right: 3px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">📡 NETWORKING SHORT NOTES</div>
+    <div class="topbar-sub">BCS 53 / MCS 206 — Quick Revision</div>
+  </div>
+  <div class="topbar-badge">9 TOPICS</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="filter('all',this)">All Topics</div>
+  <div class="tab" onclick="filter('error',this)">Error Control</div>
+  <div class="tab" onclick="filter('routing',this)">Routing</div>
+  <div class="tab" onclick="filter('ip',this)">IP & Addressing</div>
+  <div class="tab" onclick="filter('transport',this)">Transport</div>
+  <div class="tab" onclick="filter('security',this)">Security</div>
+  <div class="tab" onclick="filter('wan',this)">WAN</div>
+  <div class="tab" onclick="filter('modulation',this)">Modulation</div>
+</div>
+
+<div class="grid">
+
+  <!-- 1. CRC -->
+  <div class="card" data-cat="error">
+    <div class="card-top">
+      <div class="card-icon" style="background:#FFF0F0">🔐</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c1)">Topic 01 · Error Control</div>
+        <div class="card-title">CRC — Cyclic Redundancy Check</div>
+        <div class="card-subtitle">The "Digital Seal" on your data</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#FFF5F5; color:#7F1D1D;">
+        <span class="analogy-label" style="color:var(--c1)">🎯 Remember It</span>
+        Like a <strong>wax seal on a courier box</strong> — if the seal is broken, data was tampered.
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#FFF0F0;color:var(--c1)">1</span><span><strong>Sender</strong> adds CRC bits at the end of the message before sending.</span></li>
+        <li><span class="bullet" style="background:#FFF0F0;color:var(--c1)">2</span><span><strong>Receiver</strong> divides received data by Generator. If remainder = 000, data is safe ✅</span></li>
+        <li><span class="bullet" style="background:#FFF0F0;color:var(--c1)">3</span><span>Uses <strong>Modulo-2 Division</strong> (XOR). Same bits = 0, Different bits = 1.</span></li>
+        <li><span class="bullet" style="background:#FFF0F0;color:var(--c1)">4</span><span>Best for detecting <strong>burst errors</strong> (many consecutive bit flips).</span></li>
+        <li><span class="bullet" style="background:#FFF0F0;color:var(--c1)">5</span><span>Used in <strong>Ethernet, Wi-Fi, Bluetooth</strong>.</span></li>
+      </ul>
+      <div class="formula" style="background:#FFF0F0; color:var(--c1)">
+        <span class="formula-label">Steps (Exam Formula)</span>
+        1. Message poly → Binary<br>
+        2. Append zeros (= degree of G(x))<br>
+        3. XOR divide by Generator<br>
+        4. Remainder = CRC<br>
+        5. Transmitted = Message + CRC
+      </div>
+      <div class="trick" style="background:#FFF0F0; color:var(--c1)">💡 M(x)=x⁷+x⁵+1 → 10100001</div>
+    </div>
+  </div>
+
+  <!-- 2. Windowing + Go-Back-N -->
+  <div class="card" data-cat="error">
+    <div class="card-top">
+      <div class="card-icon" style="background:#EFF6FF">🪟</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c2)">Topic 02 · Flow Control</div>
+        <div class="card-title">Windowing + Go-Back-N</div>
+        <div class="card-subtitle">Don't drown the receiver!</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#EFF6FF; color:#1E3A5F;">
+        <span class="analogy-label" style="color:var(--c2)">🎯 Remember It</span>
+        Like throwing <strong>3 balls at once</strong> — wait for catch confirmation before throwing 3 more. Window = how many balls at once.
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#DBEAFE;color:var(--c2)">W</span><span><strong>Window Size</strong> = max frames sender can send without waiting for ACK.</span></li>
+        <li><span class="bullet" style="background:#DBEAFE;color:var(--c2)">FC</span><span><strong>Flow Control</strong>: Receiver shrinks window size if it's getting overwhelmed.</span></li>
+        <li><span class="bullet" style="background:#DBEAFE;color:var(--c2)">R</span><span><strong>Reliability</strong>: If no ACK comes in time → Timer expires → Retransmit.</span></li>
+      </ul>
+      <div class="formula" style="background:#DBEAFE; color:#1E3A5F; border-radius:7px; padding:9px 11px; margin-top:10px; font-size:11.5px; line-height:1.7;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">GO-BACK-N RULE</span>
+        Frame lost? → Receiver <strong>discards ALL frames after</strong> the lost one.<br>
+        Sender goes BACK and retransmits from the lost frame onward.<br>
+        <strong>Receiver only accepts IN-ORDER frames.</strong>
+      </div>
+      <div class="trick" style="background:#EFF6FF; color:var(--c2)">💡 N=3 → Frame 1 lost → Resend F1, F2, F3</div>
+    </div>
+  </div>
+
+  <!-- 3. DVR -->
+  <div class="card" data-cat="routing">
+    <div class="card-top">
+      <div class="card-icon" style="background:#ECFDF5">🗺️</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c3)">Topic 03 · Routing</div>
+        <div class="card-title">Distance Vector Routing (DVR)</div>
+        <div class="card-subtitle">Ask your neighbors, not the whole map</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#ECFDF5; color:#064E3B;">
+        <span class="analogy-label" style="color:var(--c3)">🎯 Remember It</span>
+        Like asking <strong>your neighbor for directions</strong>. You don't know the whole city, just who's next door.
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#D1FAE5;color:var(--c3)">1</span><span>Each router knows only its <strong>direct neighbors</strong> + their distances.</span></li>
+        <li><span class="bullet" style="background:#D1FAE5;color:var(--c3)">2</span><span>Periodically <strong>shares its entire table</strong> with neighbors.</span></li>
+        <li><span class="bullet" style="background:#D1FAE5;color:var(--c3)">3</span><span>Uses <strong>Bellman-Ford</strong>: New cost = (My cost to neighbor) + (Neighbor's cost to dest).</span></li>
+        <li><span class="bullet" style="background:#D1FAE5;color:var(--c3)">4</span><span>If new cost &lt; old cost → <strong>Update the table</strong>.</span></li>
+      </ul>
+      <div class="formula" style="background:#D1FAE5; color:#064E3B; border-radius:7px; padding:9px 11px; margin-top:10px;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">COUNT-TO-INFINITY PROBLEM</span>
+        <span style="font-size:11.5px;line-height:1.7;">
+        Link B→C breaks. B sets C = ∞.<br>
+        But A still says "I can reach C in 2!"<br>
+        B believes A → sets C = 3. A updates to 4. B to 5...<br>
+        <strong>Counts to ∞ (=16 in RIP) before realizing C is dead.</strong>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Classful vs Classless -->
+  <div class="card" data-cat="ip">
+    <div class="card-top">
+      <div class="card-icon" style="background:#FFFBEB">📦</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c4)">Topic 04 · IP Addressing</div>
+        <div class="card-title">Classful vs Classless (CIDR)</div>
+        <div class="card-subtitle">Readymade vs Tailor-made clothes</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#FFFBEB; color:#78350F;">
+        <span class="analogy-label" style="color:var(--c4)">🎯 Remember It</span>
+        Classful = <strong>S/M/L clothes</strong> (fixed sizes, lots of waste). Classless = <strong>tailor-made</strong> (exact fit, no waste).
+      </div>
+      <table class="diff-table">
+        <tr>
+          <th style="color:var(--c4)">Feature</th>
+          <th style="color:#555">Classful</th>
+          <th style="color:var(--c3)">Classless</th>
+        </tr>
+        <tr><td>Sizes</td><td>Fixed A,B,C</td><td>Any size</td></tr>
+        <tr><td>Waste</td><td>Huge waste</td><td>Minimal</td></tr>
+        <tr><td>Notation</td><td>Default mask</td><td>/24, /26 (CIDR)</td></tr>
+        <tr><td>Flexibility</td><td>❌ Rigid</td><td>✅ Flexible</td></tr>
+      </table>
+      <div class="formula" style="background:#FFFBEB; color:#92400E; border-radius:7px; padding:9px 11px; margin-top:8px; font-size:11.5px; line-height:1.7;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">ROUTE AGGREGATION (Key Concept)</span>
+        4 separate /24 networks → combine into <strong>1 single /22 entry</strong>.<br>
+        Routing table size decreases → Router works <strong>faster</strong>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. TCP 3-Way Handshake -->
+  <div class="card wide" data-cat="transport">
+    <div class="card-top">
+      <div class="card-icon" style="background:#F5F3FF">🤝</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c5)">Topic 05 · Transport Layer</div>
+        <div class="card-title">TCP 3-Way Handshake — Connection Setup & Teardown</div>
+        <div class="card-subtitle">Like a phone call — say Hello before talking</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#F5F3FF; color:#3B0764;">
+        <span class="analogy-label" style="color:var(--c5)">🎯 Remember It</span>
+        "Can you hear me?" → "Yes, can you hear me?" → "Yes! Let's talk." = <strong>SYN → SYN-ACK → ACK</strong>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--c5);margin-bottom:6px;">CONNECTION (3 STEPS)</div>
+          <ul class="points">
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">S</span><span><strong>SYN</strong>: Client → Server. "Hi, my seq = X."</span></li>
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">SA</span><span><strong>SYN-ACK</strong>: Server → Client. "Got it (ACK=X+1). My seq = Y."</span></li>
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">A</span><span><strong>ACK</strong>: Client → Server. "Got it (ACK=Y+1). Let's go!"</span></li>
+          </ul>
+          <div class="trick" style="background:#EDE9FE; color:var(--c5); margin-top:8px;">💡 States: CLOSED → SYN-SENT → SYN-RECEIVED → ESTABLISHED</div>
+        </div>
+        <div>
+          <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--c5);margin-bottom:6px;">TERMINATION (4 STEPS)</div>
+          <ul class="points">
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">F</span><span><strong>FIN</strong>: Client → "I'm done sending."</span></li>
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">A</span><span><strong>ACK</strong>: Server → "Okay, noted."</span></li>
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">F</span><span><strong>FIN</strong>: Server → "I'm done too."</span></li>
+            <li><span class="bullet" style="background:#EDE9FE;color:var(--c5)">A</span><span><strong>ACK</strong>: Client → "Bye!" → CLOSED.</span></li>
+          </ul>
+          <div class="trick" style="background:#EDE9FE; color:var(--c5); margin-top:8px;">💡 Connection = 3 steps. Termination = 4 steps.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MD5 -->
+  <div class="card" data-cat="security">
+    <div class="card-top">
+      <div class="card-icon" style="background:#ECFEFF">🔑</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c6)">Topic 06 · Security</div>
+        <div class="card-title">MD5 — Message Digest Algorithm</div>
+        <div class="card-subtitle">The "fingerprint" of your data</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#ECFEFF; color:#164E63;">
+        <span class="analogy-label" style="color:var(--c6)">🎯 Remember It</span>
+        Like a <strong>mixer/grinder</strong> — any input gives fixed output. You can't get fruits back from juice!
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#CFFAFE;color:var(--c6)">!</span><span><strong>Any input</strong> → always <strong>128-bit fixed output</strong> (hash / digest).</span></li>
+        <li><span class="bullet" style="background:#CFFAFE;color:var(--c6)">!</span><span><strong>One-way</strong>: Cannot reverse the hash to get original data.</span></li>
+        <li><span class="bullet" style="background:#CFFAFE;color:var(--c6)">!</span><span>Used for: <strong>data integrity</strong> + <strong>password storage</strong>.</span></li>
+      </ul>
+      <div class="formula" style="background:#CFFAFE; color:#164E63; border-radius:7px; padding:9px 11px; margin-top:8px;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">5 STEPS (MEMORIZE ORDER)</span>
+        <span style="font-size:11.5px;line-height:1.8;">
+        <strong>Step 1</strong>: Pad bits (add 1, then 0s → make length = 448 mod 512)<br>
+        <strong>Step 2</strong>: Append 64-bit length of original message<br>
+        <strong>Step 3</strong>: Init 4 buffers: A, B, C, D (32-bit each = 128 bits total)<br>
+        <strong>Step 4</strong>: Process 512-bit blocks — 4 rounds × 16 ops = 64 ops<br>
+        <strong>Step 5</strong>: Concat A+B+C+D = <strong>128-bit MD5 hash</strong> 🎯
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. IPv6 -->
+  <div class="card" data-cat="ip">
+    <div class="card-top">
+      <div class="card-icon" style="background:#FFF1F2">🌐</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c7)">Topic 07 · IP Addressing</div>
+        <div class="card-title">IPv6 — Features & Transition</div>
+        <div class="card-subtitle">10-digit phone numbers for the internet</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#FFF1F2; color:#7F1D1D;">
+        <span class="analogy-label" style="color:var(--c7)">🎯 Remember It</span>
+        IPv4 = <strong>5-digit phone numbers</strong> (ran out). IPv6 = <strong>10-digit</strong> (infinite supply).
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#FFE4E6;color:var(--c7)">+</span><span><strong>128-bit</strong> address (2¹²⁸ addresses = almost infinite).</span></li>
+        <li><span class="bullet" style="background:#FFE4E6;color:var(--c7)">+</span><span><strong>IPsec built-in</strong>: Security is mandatory, not optional.</span></li>
+        <li><span class="bullet" style="background:#FFE4E6;color:var(--c7)">+</span><span><strong>Simpler header</strong>: Checksum removed → Routers process faster.</span></li>
+        <li><span class="bullet" style="background:#FFE4E6;color:var(--c7)">+</span><span><strong>No NAT needed</strong>: Every device gets its own global IP.</span></li>
+      </ul>
+      <div class="formula" style="background:#FFE4E6; color:#7F1D1D; border-radius:7px; padding:9px 11px; margin-top:8px; font-size:11.5px; line-height:1.7;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">TRANSITION METHODS</span>
+        <strong>Dual Stack</strong> = device runs BOTH IPv4 & IPv6 simultaneously (hybrid car 🚗⚡)<br>
+        <strong>Tunneling</strong> = IPv6 packet hidden inside IPv4 packet to cross IPv4 network (truck inside a truck 🚚)<br>
+        <strong>Fragmentation</strong>: IPv4 = routers fragment. IPv6 = <strong>only sender fragments</strong> (routers drop & notify).
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Frame Relay -->
+  <div class="card" data-cat="wan">
+    <div class="card-top">
+      <div class="card-icon" style="background:#ECFDF5">🚄</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c8)">Topic 08 · WAN Protocols</div>
+        <div class="card-title">Frame Relay vs X.25</div>
+        <div class="card-subtitle">Express train vs local stop-and-check</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#ECFDF5; color:#064E3B;">
+        <span class="analogy-label" style="color:var(--c8)">🎯 Remember It</span>
+        X.25 = <strong>local train</strong> (checks at every station). Frame Relay = <strong>Vande Bharat</strong> (only checks at destination). Much faster!
+      </div>
+      <table class="diff-table">
+        <tr>
+          <th style="color:var(--c8)">Feature</th>
+          <th>X.25</th>
+          <th style="color:var(--c8)">Frame Relay</th>
+        </tr>
+        <tr><td>Error check</td><td>Every node</td><td>End-to-end only</td></tr>
+        <tr><td>Speed</td><td>Slow</td><td>Fast ✅</td></tr>
+        <tr><td>Lines</td><td>Analog/noisy</td><td>Digital/fiber</td></tr>
+      </table>
+      <div class="formula" style="background:#D1FAE5; color:#064E3B; border-radius:7px; padding:9px 11px; margin-top:8px; font-size:11.5px; line-height:1.8;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">ADDRESS FIELD — 6 COMPONENTS</span>
+        <strong>DLCI</strong> (10 bits): Virtual circuit ID (like a number plate)<br>
+        <strong>C/R</strong> (1 bit): Command or Response<br>
+        <strong>EA</strong> (1 bit): Is address field ending here?<br>
+        <strong>FECN</strong> (1 bit): Traffic jam ahead ⚠️ (tells receiver)<br>
+        <strong>BECN</strong> (1 bit): Jam behind ⚠️ (tells sender to slow down)<br>
+        <strong>DE</strong> (1 bit): Discard Eligibility (1 = low priority, drop first)
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. FSK / PSK -->
+  <div class="card" data-cat="modulation">
+    <div class="card-top">
+      <div class="card-icon" style="background:#FAF5FF">📶</div>
+      <div class="card-head">
+        <div class="card-num" style="color:var(--c9)">Topic 09 · Modulation</div>
+        <div class="card-title">FSK & PSK — Digital Modulation</div>
+        <div class="card-subtitle">Converting 0s & 1s into waves</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="analogy" style="background:#FAF5FF; color:#3B0764;">
+        <span class="analogy-label" style="color:var(--c9)">🎯 Remember It</span>
+        FSK = <strong>change whistle pitch</strong> (high=1, low=0). PSK = <strong>change dance step direction</strong> (flip=1, same=0).
+      </div>
+      <ul class="points">
+        <li><span class="bullet" style="background:#EDE9FE;color:var(--c9)">FSK</span><span><strong>Frequency changes</strong>. High freq = 1, Low freq = 0. Used in: Caller ID, old modems.</span></li>
+        <li><span class="bullet" style="background:#EDE9FE;color:var(--c9)">PSK</span><span><strong>Phase changes</strong> (180° shift when bit changes). Used in: Wi-Fi, Bluetooth.</span></li>
+      </ul>
+      <div class="formula" style="background:#EDE9FE; color:#3B0764; border-radius:7px; padding:9px 11px; margin-top:8px; font-size:11.5px; line-height:1.7;">
+        <span class="formula-label" style="font-family:Space Mono,monospace;font-size:8px;letter-spacing:.1em;font-weight:700;display:block;margin-bottom:4px;opacity:.7;">PSK PROBLEM + SOLUTION</span>
+        <strong>Problem (Phase Ambiguity)</strong>: Receiver doesn't know original reference phase → can't decode 0 or 1.<br><br>
+        <strong>Solution → DPSK</strong> (Differential PSK):<br>
+        Same bit as previous → <strong>No phase change</strong> (0°)<br>
+        Different bit → <strong>Phase shifts 180°</strong><br>
+        Receiver compares <em>current vs previous</em> — no absolute reference needed! ✅
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- QUICK REFERENCE FOOTER -->
+<div style="max-width:900px;margin:20px auto 0;padding:0 16px;">
+  <div style="background:#1A1A1A;border-radius:12px;padding:16px 20px;color:#fff;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:#888;margin-bottom:10px;">⚡ EXAM QUICK REFERENCE</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#FF4D4D;font-weight:700;">CRC:</span> MSG + CRC = Transmitted frame</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#2563EB;font-weight:700;">Go-Back-N:</span> Lost frame → resend N onwards</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#059669;font-weight:700;">DVR:</span> Bellman-Ford + Count-to-∞ bug</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#D97706;font-weight:700;">CIDR:</span> /notation + Route Aggregation</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#7C3AED;font-weight:700;">TCP:</span> 3 steps connect, 4 steps close</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#0891B2;font-weight:700;">MD5:</span> 5 steps → 128-bit hash</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#DC2626;font-weight:700;">IPv6:</span> 128-bit, IPsec, Dual Stack, Tunnel</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#065F46;font-weight:700;">Frame Relay:</span> DLCI, FECN, BECN, DE</div>
+      <div style="font-size:11.5px;line-height:1.7;color:#ccc;"><span style="color:#9333EA;font-weight:700;">PSK fix:</span> DPSK = compare prev & curr bit</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function filter(cat, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.card').forEach(c => {
+    if (cat === 'all' || c.dataset.cat === cat) {
+      c.style.display = '';
+    } else {
+      c.style.display = 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>
